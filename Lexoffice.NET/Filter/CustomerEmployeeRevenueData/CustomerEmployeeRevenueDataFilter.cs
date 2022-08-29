@@ -6,11 +6,6 @@ public static class CustomerEmployeeRevenueDataFilter
         this IEnumerable<DataContracts.CustomerEmployeeRevenueData> source,
         IEnumerable<IFilterCustomerEmployeeRevenueData> filters)
     {
-        var filteredData = source;
-
-        foreach (var filter in filters)
-            filteredData = filter.Filter(filteredData);
-
-        return filteredData;
+        return filters.Aggregate(source, (current, filter) => filter.Filter(current));
     }
 }

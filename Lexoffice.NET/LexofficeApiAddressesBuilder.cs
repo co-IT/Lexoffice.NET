@@ -2,7 +2,7 @@
 
 namespace Lexoffice.NET;
 
-internal class LexofficeApiAddressesBuilder
+internal static class LexofficeApiAddressesBuilder
 {
     private static readonly string BaseAddress = @"https://api.lexoffice.io";
 

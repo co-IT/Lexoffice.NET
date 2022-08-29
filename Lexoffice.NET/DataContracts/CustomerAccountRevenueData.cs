@@ -4,24 +4,19 @@ namespace Lexoffice.NET.DataContracts;
 
 public class CustomerAccountRevenueData
 {
-    public int Year { get; set; }
-    public string Customer { get; set; }
-    public int Account { get; set; }
-    public decimal Revenue { get; set; }
+    public int Year { get; init; }
+    public string Customer { get; init; } = null!;
+    public int Account { get; init; }
+    public decimal Revenue { get; init; }
 
-    public static IEnumerable<CustomerAccountRevenueData> FromInvoiceItems(List<InvoiceItem> invoiceItems)
+    public static IEnumerable<CustomerAccountRevenueData> FromInvoiceItems(IEnumerable<InvoiceItem> invoiceItems)
     {
-        foreach (var item in invoiceItems)
+        return invoiceItems.Select(item => new CustomerAccountRevenueData
         {
-            var customerAccountRevenueData = new CustomerAccountRevenueData
-            {
-                Year = item.Date.Year,
-                Account = item.Account,
-                Customer = item.Customer,
-                Revenue = item.Price
-            };
-
-            yield return customerAccountRevenueData;
-        }
+            Year = item.Date.Year,
+            Account = item.Account,
+            Customer = item.Customer,
+            Revenue = item.Price
+        });
     }
 }
