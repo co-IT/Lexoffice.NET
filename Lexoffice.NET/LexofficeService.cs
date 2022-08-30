@@ -17,8 +17,8 @@ public class LexofficeService : IInvoiceService
         {
             DefaultRequestHeaders =
             {
-                {"Authorization", $"Bearer {accessToken}"},
-                {"Accept", "application/json"}
+                { "Authorization", $"Bearer {accessToken}" },
+                { "Accept", "application/json" }
             }
         };
     }
@@ -30,12 +30,12 @@ public class LexofficeService : IInvoiceService
         var type = VoucherType.Invoice;
         var status = VoucherStatus.Paid | VoucherStatus.Paidoff | VoucherStatus.Open | VoucherStatus.Voided;
 
-        var wrapper = await GetVouchersAsync(type, status);
+        var wrapper = await GetVouchersAsync(type, status).ConfigureAwait(false);
         vouchers.AddRange(wrapper.Content);
 
         for (var page = 1; page < wrapper.TotalPages; page++)
         {
-            var pageWrapper = await GetVouchersAsync(type, status, page);
+            var pageWrapper = await GetVouchersAsync(type, status, page).ConfigureAwait(false);
             vouchers.AddRange(pageWrapper.Content);
         }
 
@@ -53,18 +53,25 @@ public class LexofficeService : IInvoiceService
 
             tasks.Add(Task.Run(async () =>
             {
-                var retryPolicy = Policy
-                    .Handle<HttpRequestException>()
-                    .WaitAndRetryAsync(10, retryAttempt =>
-                        TimeSpan.FromMilliseconds(Math.Pow(2, retryAttempt) + _random.Next(-1000, 1000))
-                    );
-                var result = await retryPolicy.ExecuteAsync(async () => await GetInvoiceAsync(voucher.Id));
-                throttler.Release();
-                return result;
+                try
+                {
+                    var retryPolicy = Policy
+                        .Handle<HttpRequestException>()
+                        .WaitAndRetryAsync(10, retryAttempt =>
+                            TimeSpan.FromMilliseconds(Math.Pow(2, retryAttempt) + _random.Next(-1000, 1000))
+                        );
+
+                    return await retryPolicy.ExecuteAsync(async () => await GetInvoiceAsync(voucher.Id).ConfigureAwait(false));
+                }
+                finally
+                {
+                    throttler.Release();
+                }
             }));
         }
 
         var invoices = await Task.WhenAll(tasks.ToArray()).ConfigureAwait(false);
+        
         return invoices.ToImmutableList();
     }
 
@@ -75,9 +82,10 @@ public class LexofficeService : IInvoiceService
 
         var uri = LexofficeApiAddressesBuilder.AllVouchersUri(voucherTypeString, statusTypeString, page, size);
 
-        var response = await _client.GetAsync(uri);
+        var response = await _client.GetAsync(uri).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        var contents = await response.Content.ReadAsStringAsync();
+        
+        var contents = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
         return JsonConvert.DeserializeObject<VoucherResponseWrapper>(contents);
     }
@@ -86,12 +94,15 @@ public class LexofficeService : IInvoiceService
     {
         var uri = LexofficeApiAddressesBuilder.InvoiceUri(id);
 
-        var response = await _client.GetAsync(uri);
+        var response = await _client.GetAsync(uri).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
-        var contents = await response.Content.ReadAsStringAsync();
+        
+        var contents = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
-        var jsonSerializerSettings = new JsonSerializerSettings();
-        jsonSerializerSettings.MissingMemberHandling = MissingMemberHandling.Ignore;
+        var jsonSerializerSettings = new JsonSerializerSettings
+        {
+            MissingMemberHandling = MissingMemberHandling.Ignore
+        };
 
         return JsonConvert.DeserializeObject<Invoice>(contents, jsonSerializerSettings);
     }

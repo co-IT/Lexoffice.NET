@@ -7,7 +7,8 @@ public static class CustomerAccountRevenueDataGrouper
     public static IEnumerable<CustomerAccountRevenueData> GroupByCustomerAndAccount(
         this IEnumerable<CustomerAccountRevenueData> customerAccountRevenueDataList)
     {
-        return customerAccountRevenueDataList.GroupBy(item => new
+        return customerAccountRevenueDataList
+            .GroupBy(item => new
             {
                 item.Year,
                 item.Customer,
@@ -22,7 +23,6 @@ public static class CustomerAccountRevenueDataGrouper
             })
             .OrderBy(item => item.Year)
             .ThenBy(item => item.Customer)
-            .ThenBy(item => item.Account)
-            .ToList();
+            .ThenBy(item => item.Account);
     }
 }

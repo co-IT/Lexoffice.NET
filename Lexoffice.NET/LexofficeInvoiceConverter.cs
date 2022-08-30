@@ -7,13 +7,7 @@ public static class LexofficeInvoiceConverter
 {
     public static IImmutableList<InvoiceItem> GetInvoiceItems(this IImmutableList<Invoice> invoices)
     {
-        var invoiceItemList = new List<InvoiceItem>();
-
-        invoices
-            .ToList()
-            .ForEach(invoice => invoiceItemList.AddRange(ConvertInvoice(invoice)));
-
-        return invoiceItemList.ToImmutableList();
+        return invoices.SelectMany(ConvertInvoice).ToImmutableList();
     }
 
     private static IImmutableList<InvoiceItem> ConvertInvoice(Invoice invoice)
@@ -22,16 +16,13 @@ public static class LexofficeInvoiceConverter
         var customer = invoice.Address.Name;
         var date = DateTime.Parse(invoice.VoucherDate);
 
-        var invoiceItemList = new List<InvoiceItem>();
-        invoice
+        return invoice
             .LineItems
-            .ForEach(
-                line => invoiceItemList.Add(ConvertInvoice(id, customer, date, line)));
-
-        return invoiceItemList.ToImmutableList();
+            .Select(line => ConvertInvoice(id, customer, date, line))
+            .ToImmutableList();
     }
 
-    private static InvoiceItem? ConvertInvoice(string id, string customer, DateTime date, InvoiceLineItem item)
+    private static InvoiceItem ConvertInvoice(string id, string customer, DateTime date, InvoiceLineItem item)
     {
         var employeeAccountString = item.Name;
         var employeeAccountStringSplit = employeeAccountString.Split("-");
@@ -42,6 +33,7 @@ public static class LexofficeInvoiceConverter
         var employee = new Employee(trimmedEmployeeName, employeeNumber);
 
         var account = int.Parse(employeeAccountStringSplit[0].Replace(" ", ""));
+        
         return new InvoiceItem(id, customer, date, employee, account, item.Description,
             item.Quantity, item.LineItemAmount);
     }
