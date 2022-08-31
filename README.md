@@ -13,7 +13,7 @@ To use this library you have to generate an API Key for your lexoffice Account.
 You can generate an API Key [here](https://app.lexoffice.de/addons/public-api). If you have any problems getting the key you can follow the steps in [these instructions](https://app.lexoffice.de/addons/public-api) by lexoffice.
 
 # Usage
-First you have to create a new instance of LexofficeService with your API token like this
+First you have to create a new instance of LexofficeService with your API token like this:
 
 ```csharp
 var token = "Your-Api-Token";
@@ -22,18 +22,12 @@ var lexofficeService = new LexofficeService(token);
 
 ## Getting all invoice vouchers
 ```csharp
-var token = "Your-Api-Token";
-var lexofficeService = new LexofficeService(token);
-
 var vouchers = await lexOfficeService.GetAllInvoiceVouchersAsync();
 ```
 
 ## Getting all invoices
 To get all invoices all vouchers have to be loaded first. Then the invoice can be queried for each voucher like this:
 ```csharp
-var token = "Your-Api-Token";
-var lexofficeService = new LexofficeService(token);
-
 var vouchers = await lexOfficeService.GetAllInvoiceVouchersAsync();
 var invoices = await lexOfficeService.GetInvoicesAsync(vouchers);
 ```
