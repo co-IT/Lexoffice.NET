@@ -1,3 +1,6 @@
+## This is archived as of 12.08.2024. You can find the newest version [here](https://github.com/co-IT/toolkit/tree/main/src/coIT.Libraries.Lexoffice)
+
+
 # Lexoffice.NET
 .NET library for the accounting software [lexoffice](https://www.lexoffice.de/)
 
